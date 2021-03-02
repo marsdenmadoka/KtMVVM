@@ -55,7 +55,7 @@ class TasksFragment : Fragment(R.layout.fragment_tasks) {
         //this onQueryTextChanged is from our extension function in util/ViewExt package
         searchView.onQueryTextChanged {
             //update search query
-            viewModel.searchQuery.value=it
+            viewModel.searchQuery.value = it
         }
 
     }
@@ -64,15 +64,16 @@ class TasksFragment : Fragment(R.layout.fragment_tasks) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_sort_by_name -> {
-
+                viewModel.sortOrder.value = SortOrder.BY_NAME
                 true
             }
             R.id.action_sort_by_date_created -> {
-
+                viewModel.sortOrder.value = SortOrder.BY_DATE
                 true
             }
             R.id.action_hide_complete_tasks -> {
                 item.isChecked = !item.isChecked
+                viewModel.hideCompleted.value =item.isChecked
                 true
             }
             R.id.action_delete_all_completed_tasks -> {
