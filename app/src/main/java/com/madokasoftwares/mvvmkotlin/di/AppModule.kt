@@ -15,24 +15,27 @@ import javax.inject.Singleton
 
 
 //dependency injection
-
 @Module
 @InstallIn(ApplicationComponent::class) //we want to use the same db throughout our app
 object AppModule {
 
-    @Singleton //when need one instance of our Taskdatabase
+    @Singleton //we need one instance of our Taskdatabase
     @Provides //instruction function to tell dager what to do
     fun provideDatabase( //task database when we later need this object dagger will automatically provide for us
-   app:Application,
-   callback: TaskDatabase.Callback
-    )= Room.databaseBuilder(app,TaskDatabase::class.java,"task_database") //task_database-our db name
-            .fallbackToDestructiveMigration()
-            .addCallback(callback)//we dont want our recycleview to be empty
-            .build()
+        app: Application,
+        callback: TaskDatabase.Callback
+    ) = Room.databaseBuilder(
+        app,
+        TaskDatabase::class.java,
+        "task_database"
+    ) //task_database-our db name
+        .fallbackToDestructiveMigration()
+        .addCallback(callback)//we dont want our recycleview to be empty
+        .build()
 //= means that return
 
     @Provides //createas our TaskDao object
-    fun provideTaskDao(db:TaskDatabase) =db.taskDao()
+    fun provideTaskDao(db: TaskDatabase) = db.taskDao()
 
     @ApplicationScope
     @Provides
