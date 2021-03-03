@@ -16,11 +16,12 @@ class AddEditTaskFragment:Fragment(R.layout.fragment_add_edit_task) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val binding = FragmentAddEditTaskBinding.bind(view)
 
         binding.apply {
-            editTaskName.setText(viewModel.taskName)
-            checkBoxImportant.isChecked=viewModel.taskimportance
+            editTextTaskName.setText(viewModel.taskName)
+            checkBoxImportant.isChecked=viewModel.taskImportance
             checkBoxImportant.jumpDrawablesToCurrentState()
             textViewDateCreated.isVisible=viewModel.task != null
             textViewDateCreated.text="created:${viewModel.task?.createdDateFormatted} "

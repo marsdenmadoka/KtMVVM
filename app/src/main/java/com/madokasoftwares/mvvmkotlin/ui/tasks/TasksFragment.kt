@@ -83,11 +83,11 @@ class TasksFragment : Fragment(R.layout.fragment_tasks),TasksAdapter.OnItemClick
                      }
                      //navigating to the other fragment
                      is TasksViewModel.TasksEvent.NavigateToAddTaskScreen -> {
-                     val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3()
+                     val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3(null,"New Task")
                          findNavController().navigate(action)
                      }
                      is TasksViewModel.TasksEvent.NavigateToEditTaskScreen -> {
-                         val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3(event.task)
+                         val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3(event.task,title = "Edit Task")
                          findNavController().navigate(action)
                      }
                  }.exhaustive
