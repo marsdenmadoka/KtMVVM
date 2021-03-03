@@ -1,9 +1,8 @@
 package com.madokasoftwares.mvvmkotlin.ui.tasks
 
+import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.madokasoftwares.mvvmkotlin.data.PreferencesManager
 import com.madokasoftwares.mvvmkotlin.data.Task
 import com.madokasoftwares.mvvmkotlin.data.TaskDao
@@ -16,18 +15,21 @@ import kotlinx.coroutines.launch
 
 class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the viewModel
     private val taskDao: TaskDao, //
-    private val preferencesManager: PreferencesManager //our preferencesManager class
-) : ViewModel() {
+    private val preferencesManager: PreferencesManager, //our preferencesManager class
+    @Assisted private val state:SavedStateHandle
+    ) : ViewModel() {
 
     private val tasksEventChannel = Channel<TasksEvent>()//used in our seale class
     val tasksEvent = tasksEventChannel.receiveAsFlow()
 
     val preferencesFlow = preferencesManager.preferencesFlow
-    val searchQuery = MutableStateFlow("")//for searching
+    val searchQuery = state.getLiveData("searchQuery","")
+
+    //val searchQuery = MutableStateFlow("")//for searching
 
 
     private val tasksFlow = combine(
-        searchQuery,
+        searchQuery.asFlow(),
         preferencesFlow
     ) { query, filterPreferences ->
         Pair(query, filterPreferences)
@@ -46,9 +48,11 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
     //preventing our data in fragment from being lost when we change the state of application eg rotate or pause
     val tasks = tasksFlow.asLiveData() //return flow of lists of tasks from our TaskDao
 
-    fun onTaskSelected(task: Task) {
-
+    //whenwe click item in the recycleviwer
+    fun onTaskSelected(task: Task) =viewModelScope.launch {
+        tasksEventChannel.send(TasksEvent.NavigateToEditTaskScreen(task))
     }
+
 
     //when want to update the checked box hence we must put it in courountine since our update is a suspend function
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean) = viewModelScope.launch {
@@ -65,8 +69,14 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
         taskDao.insert(task)
     }
 
-    //represent close combination of different values will use it in showing the snakebar
+    //we want to send our event to our channel;
+    fun onAddNewTaskClick()=viewModelScope.launch {
+     tasksEventChannel.send(TasksEvent.NavigateToAddTaskScreen)
+    }
+    //represent close combination of different values
     sealed class TasksEvent {
+        object NavigateToAddTaskScreen:TasksEvent()
+        data class NavigateToEditTaskScreen(val task:Task):TasksEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TasksEvent()
     }
 }

@@ -9,6 +9,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.madokasoftwares.mvvmkotlin.R
 import com.madokasoftwares.mvvmkotlin.data.Task
 import com.madokasoftwares.mvvmkotlin.databinding.FragmentTasksBinding
+import com.madokasoftwares.mvvmkotlin.util.exhaustive
 import com.madokasoftwares.mvvmkotlin.util.onQueryTextChanged
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -58,6 +60,10 @@ class TasksFragment : Fragment(R.layout.fragment_tasks),TasksAdapter.OnItemClick
                     viewModel.onTaskSwiped(task)
                 }
             }).attachToRecyclerView(recyclerViewTasks)
+
+            fabAddTask.setOnClickListener {
+                viewModel.onAddNewTaskClick()
+            }
         }
 
         //fragment observing our data from viewmodel
@@ -75,7 +81,16 @@ class TasksFragment : Fragment(R.layout.fragment_tasks),TasksAdapter.OnItemClick
                                  viewModel.onUndoDeleteClick(event.task)
                              }.show()
                      }
-                 }
+                     //navigating to the other fragment
+                     is TasksViewModel.TasksEvent.NavigateToAddTaskScreen -> {
+                     val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3()
+                         findNavController().navigate(action)
+                     }
+                     is TasksViewModel.TasksEvent.NavigateToEditTaskScreen -> {
+                         val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3(event.task)
+                         findNavController().navigate(action)
+                     }
+                 }.exhaustive
             }
         }
 
