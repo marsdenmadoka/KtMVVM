@@ -5,17 +5,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.madokasoftwares.mvvmkotlin.data.PreferencesManager
+import com.madokasoftwares.mvvmkotlin.data.Task
 import com.madokasoftwares.mvvmkotlin.data.TaskDao
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-
 
 class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the viewModel
     private val taskDao: TaskDao, //
     private val preferencesManager: PreferencesManager //our preferencesManager class
 ) : ViewModel() {
+
+    private val tasksEventChannel = Channel<TasksEvent>()//used in our seale class
+    val tasksEvent = tasksEventChannel.receiveAsFlow()
 
     val preferencesFlow = preferencesManager.preferencesFlow
     val searchQuery = MutableStateFlow("")//for searching
@@ -34,12 +39,36 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
         preferencesManager.updateSortOrder(sortOrder)
     }
 
-    fun onHideCompletedClick(hideCompleted:Boolean) = viewModelScope.launch {
+    fun onHideCompletedClick(hideCompleted: Boolean) = viewModelScope.launch {
         preferencesManager.updateHideCompleted(hideCompleted)
     }
 
     //preventing our data in fragment from being lost when we change the state of application eg rotate or pause
     val tasks = tasksFlow.asLiveData() //return flow of lists of tasks from our TaskDao
+
+    fun onTaskSelected(task: Task) {
+
+    }
+
+    //when want to update the checked box hence we must put it in courountine since our update is a suspend function
+    fun onTaskCheckedChanged(task: Task, isChecked: Boolean) = viewModelScope.launch {
+        taskDao.update(task.copy(completed = isChecked)) //task.copy since its from our data class
+    }
+
+    fun onTaskSwiped(task: Task) = viewModelScope.launch {
+        taskDao.delete(task)
+        //showing the snakebar
+        tasksEventChannel.send(TasksEvent.ShowUndoDeleteTaskMessage(task))
+    }
+
+    fun onUndoDeleteClick(task:Task) = viewModelScope.launch {
+        taskDao.insert(task)
+    }
+
+    //represent close combination of different values will use it in showing the snakebar
+    sealed class TasksEvent {
+        data class ShowUndoDeleteTaskMessage(val task: Task) : TasksEvent()
+    }
 }
 
 //sorting our item by date and name
