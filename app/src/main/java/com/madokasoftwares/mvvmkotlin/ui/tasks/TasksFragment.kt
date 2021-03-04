@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -65,6 +66,12 @@ class TasksFragment : Fragment(R.layout.fragment_tasks),TasksAdapter.OnItemClick
                 viewModel.onAddNewTaskClick()
             }
         }
+        //from ourAddEdittaskFragmen
+        setFragmentResultListener("add_edit_request"){_,bundle ->
+            val result = bundle.getInt("add_edit_result")
+            viewModel.onAddEditResult(result)
+        }
+
 
         //fragment observing our data from viewmodel
         viewModel.tasks.observe(viewLifecycleOwner) {
@@ -81,14 +88,18 @@ class TasksFragment : Fragment(R.layout.fragment_tasks),TasksAdapter.OnItemClick
                                  viewModel.onUndoDeleteClick(event.task)
                              }.show()
                      }
-                     //navigating to the other fragment
+                     //navigating to the other fragment when addnewtaskis clicked
                      is TasksViewModel.TasksEvent.NavigateToAddTaskScreen -> {
                      val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3(null,"New Task")
                          findNavController().navigate(action)
                      }
+                     //when item in reycle view is cliked we want to carry some data but this time not using IntentExtras
                      is TasksViewModel.TasksEvent.NavigateToEditTaskScreen -> {
                          val action = TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment3(event.task,title = "Edit Task")
                          findNavController().navigate(action)
+                     }
+                     is TasksViewModel.TasksEvent.ShowTaskSavedConfirmationMessage -> {
+                         Snackbar.make(requireView(),event.msg,Snackbar.LENGTH_LONG).show()
                      }
                  }.exhaustive
             }

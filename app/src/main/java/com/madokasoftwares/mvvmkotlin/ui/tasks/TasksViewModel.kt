@@ -6,6 +6,8 @@ import androidx.lifecycle.*
 import com.madokasoftwares.mvvmkotlin.data.PreferencesManager
 import com.madokasoftwares.mvvmkotlin.data.Task
 import com.madokasoftwares.mvvmkotlin.data.TaskDao
+import com.madokasoftwares.mvvmkotlin.ui.ADD_TASK_RESULT_OK
+import com.madokasoftwares.mvvmkotlin.ui.EDIT_TASK_RESULY_OK
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.combine
@@ -73,11 +75,24 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
     fun onAddNewTaskClick()=viewModelScope.launch {
      tasksEventChannel.send(TasksEvent.NavigateToAddTaskScreen)
     }
+    fun onAddEditResult(result:Int){
+        when(result){
+            ADD_TASK_RESULT_OK->showTaskSavedConfirmationMessage("Task added")
+            EDIT_TASK_RESULY_OK ->showTaskSavedConfirmationMessage("Task updated")
+        }
+    }
+
+    private  fun showTaskSavedConfirmationMessage(text:String)=viewModelScope.launch {
+     tasksEventChannel.send(TasksEvent.ShowTaskSavedConfirmationMessage(text))
+    }
+
     //represent close combination of different values
     sealed class TasksEvent {
         object NavigateToAddTaskScreen:TasksEvent()
         data class NavigateToEditTaskScreen(val task:Task):TasksEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TasksEvent()
+        data class ShowTaskSavedConfirmationMessage(val msg:String):TasksEvent()
+
     }
 }
 
