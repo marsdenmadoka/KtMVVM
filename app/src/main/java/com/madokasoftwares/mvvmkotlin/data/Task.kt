@@ -20,4 +20,6 @@ data class Task(
 ) : Parcelable {
     val createdDateFormatted: String  //formatting our time in date time
         get() = DateFormat.getDateInstance().format(created) //overriding the get method
+
+
 }

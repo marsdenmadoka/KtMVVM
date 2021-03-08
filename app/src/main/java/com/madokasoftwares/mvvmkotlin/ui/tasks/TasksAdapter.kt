@@ -47,6 +47,9 @@ class TasksAdapter(private val listener: OnItemClickListener) :
 
                     }
                 }
+
+
+
             }
         }
 

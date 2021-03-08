@@ -47,6 +47,7 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
         preferencesManager.updateHideCompleted(hideCompleted)
     }
 
+
     //preventing our data in fragment from being lost when we change the state of application eg rotate or pause
     val tasks = tasksFlow.asLiveData() //return flow of lists of tasks from our TaskDao
 
@@ -67,6 +68,7 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
         tasksEventChannel.send(TasksEvent.ShowUndoDeleteTaskMessage(task))
     }
 
+
     fun onUndoDeleteClick(task:Task) = viewModelScope.launch {
         taskDao.insert(task)
     }
@@ -86,13 +88,17 @@ class TasksViewModel @ViewModelInject constructor(//injecting our DAO in the vie
      tasksEventChannel.send(TasksEvent.ShowTaskSavedConfirmationMessage(text))
     }
 
+
+    fun onDeleteAllCompletedClick()=viewModelScope.launch {
+   tasksEventChannel.send(TasksEvent.NavigateToDeleteAllCompletedScreen)
+    }
     //represent close combination of different values
     sealed class TasksEvent {
         object NavigateToAddTaskScreen:TasksEvent()
         data class NavigateToEditTaskScreen(val task:Task):TasksEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TasksEvent()
         data class ShowTaskSavedConfirmationMessage(val msg:String):TasksEvent()
-
+        object NavigateToDeleteAllCompletedScreen:TasksEvent()
     }
 }
 
